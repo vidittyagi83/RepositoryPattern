@@ -1,5 +1,4 @@
-﻿using RepositoryPattern.Entities;
-using RepositoryPattern.Interfaces;
+﻿using RepositoryPattern.Interfaces;
 
 namespace RepositoryPattern.Services
 {
@@ -12,7 +11,7 @@ namespace RepositoryPattern.Services
             _repository = repository;
         }
 
-        public async Task<IEnumerable<Product>> GetProductsAsync()
+        public async Task<IEnumerable<Models.Product>> GetProductsAsync()
         {
             return await _repository.GetAllAsync();
         }

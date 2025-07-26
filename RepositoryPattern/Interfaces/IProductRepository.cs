@@ -1,13 +1,11 @@
-﻿using RepositoryPattern.Entities;
-
-namespace RepositoryPattern.Interfaces
+﻿namespace RepositoryPattern.Interfaces
 {
     public interface IProductRepository
     {
-        Task<IEnumerable<Product>> GetAllAsync();
-        Task<Product?> GetByIdAsync(int id);
-        Task AddAsync(Product product);
-        Task UpdateAsync(Product product);
+        Task<IEnumerable<Models.Product>> GetAllAsync();
+        Task<Models.Product?> GetByIdAsync(int id);
+        Task AddAsync(Models.Product product);
+        Task UpdateAsync(Models.Product product);
         Task DeleteAsync(int id);
     }
 }

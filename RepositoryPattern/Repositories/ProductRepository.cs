@@ -1,42 +1,69 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RepositoryPattern.Data;
-using RepositoryPattern.Entities;
 using RepositoryPattern.Interfaces;
+using RepositoryPattern.Models;
 
 namespace RepositoryPattern.Repositories
 {
     public class ProductRepository : IProductRepository
     {
         private readonly AppDbContext _context;
+        private readonly TestContext _testContext;
 
-        public ProductRepository(AppDbContext context)
+        public ProductRepository(AppDbContext context, TestContext testContext)
         {
             _context = context;
+            _testContext = testContext;
         }
 
-        public async Task<IEnumerable<Product>> GetAllAsync()
+        public async Task<IEnumerable<Models.Product>> GetAllAsync()
         {
-            //return await _context.Products.ToListAsync();
-            var navigation = await _context.ProductCategories
-               .Include(pc => pc.Category)
-               .ToListAsync();
-            return await _context.Products.ToListAsync();
+            // lazy loading(UseLazyLoadingProxies() should be enabled)
+
+            //var productCategory = _testContext.ProductCategories.First();
+            //var categoryName = productCategory.Category.Name; // Category is loaded automatically
+
+            // early loading
+            //var navigation = await _testContext.ProductCategories
+            //   .Include(pc => pc.Category)
+            //   .ToListAsync();
+
+            var productCategory = await _testContext.ProductCategories.FirstAsync();
+
+            // Explicitly load the related Category
+            await _testContext.Entry(productCategory)
+                .Reference(pc => pc.Category)
+                .LoadAsync();
+
+            // filter in early loading
+            var productCategories = await _testContext.ProductCategories
+                                                    .Include(pc => pc.Category)
+                                                    .Where(pc => pc.Price > 100)
+                                                    .ToListAsync();
+
+            var productCategories2 = await _testContext.ProductCategories
+                                                        .Include(pc => pc.Category)
+                                                        .Where(pc => pc.Category.Name == "Electronics")
+                                                        .ToListAsync();
+
+
+            return await _testContext.Products.ToListAsync();
         }
 
-        public async Task<Product?> GetByIdAsync(int id)
+        public async Task<Models.Product?> GetByIdAsync(int id)
         {
-            return await _context.Products.FindAsync(id);
+            return await _testContext.Products.FindAsync(id);
         }
 
-        public async Task AddAsync(Product product)
+        public async Task AddAsync(Models.Product product)
         {
-            _ = _context.Products.Add(product);
+            _ = _testContext.Products.Add(product);
             _ = await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Product product)
+        public async Task UpdateAsync(Models.Product product)
         {
-            _ = _context.Products.Update(product);
+            _ = _testContext.Products.Update(product);
             _ = await _context.SaveChangesAsync();
         }
 
